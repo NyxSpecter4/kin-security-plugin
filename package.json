@@ -1,0 +1,19 @@
+{
+  "name": "kin-security-plugin",
+  "version": "1.0.0",
+  "description": "Multi-agent cybersecurity triage and vulnerability verification plugin",
+  "main": "mcp-server/index.cjs",
+  "scripts": {
+    "test": "node mcp-server/test-client.cjs"
+  },
+  "keywords": [
+    "cybersecurity",
+    "vulnerability-scanner",
+    "ai-agent",
+    "mcp",
+    "huggingface",
+    "triage"
+  ],
+  "author": "NyxSpecter4",
+  "license": "MIT"
+}

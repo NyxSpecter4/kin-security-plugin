@@ -1,0 +1,5 @@
+{
+  "name": "kin-security",
+  "description": "Cybersecurity triage and vulnerability verification powered by nyxspecter4/kin-sft-lora",
+  "version": "1.0.0"
+}

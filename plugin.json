@@ -1,0 +1,9 @@
+{
+  "name": "kin-security",
+  "version": "1.0.0",
+  "description": "Cybersecurity triage, vulnerability verification, and secure code auditing powered by nyxspecter4/kin-sft-lora",
+  "author": "NyxSpecter4 <kiran@kinetigor.com>",
+  "homepage": "https://huggingface.co/nyxspecter4/kin-sft-lora",
+  "repository": "https://github.com/NyxSpecter4/kin-security-plugin",
+  "license": "MIT"
+}

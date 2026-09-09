@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "kin-security": {
+      "command": "node",
+      "args": [
+        "/mcp-server/index.cjs"
+      ]
+    }
+  }
+}
