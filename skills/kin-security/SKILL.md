@@ -1,50 +1,34 @@
 ---
 name: kin-security
-description: Authoritative cybersecurity vulnerability triage, secure code review, and CVE analysis powered by nyxspecter4/kin-sft-lora and the verified kin-cyber-dpo-v2 benchmark dataset.
+description: Cybersecurity vulnerability triage, secure code review, and CVE lookup. Live KIN model triage when reachable; deterministic labeled rule-engine fallback; real NVD CVE data.
 allowed-tools: kin_triage_vulnerability, kin_scan_code, kin_explain_cve
 ---
 
 # KIN Cybersecurity Intelligence
 
-This skill equips coding agents (Google Antigravity, Claude Code, Cursor, Codex) with specialized cybersecurity capabilities powered by **`nyxspecter4/kin-sft-lora`** (fine-tuned 3B Qwen2.5 on 1,635+ verified DPO pairs from `nyxspecter4/kin-cyber-dpo-v2`).
+This skill equips coding agents (Google Antigravity, Claude Code, Cursor, Codex) with cybersecurity capabilities backed by **`nyxspecter4/kin-sft-lora`** (3B Qwen2.5 + LoRA, Q4_K_M GGUF in-repo) served via the public **`nyxspecter4/kin-cybersec`** Space, plus **`nyxspecter4/kin-cyber-dpo-v2`** (1,637 DPO pairs).
 
 ## When to Activate
 
-Activate this skill whenever the user or task involves:
-- Performing code security audits or reviewing pull requests for vulnerabilities.
-- Investigating CVEs, security advisories, or bug bounty reports.
+Activate whenever the task involves:
+- Code security audits or pull-request reviews.
+- CVE/advisory investigation (use `kin_explain_cve` for official NVD data).
 - Triage of suspicious code blocks (SQL queries, shell executions, DOM rendering, path operations, SSRF vectors).
-- Generating secure, hardened remediations for identified vulnerabilities.
-- Validating whether a reported vulnerability is an exploitable true positive or a benign false positive.
+- Generating hardened remediations for identified vulnerabilities.
 
 ## Available Tools
 
 ### 1. `kin_triage_vulnerability`
-Performs an in-depth 5-field triage brief on a scenario, vulnerability, or attack vector.
-- **Parameters**:
-  - `scenario_desc` (required): Code snippet or vulnerability description.
-  - `user_payload` (optional): Potential exploit string or PoC vector to evaluate.
-  - `defense_goal` (optional): Hardening goal or architecture constraint.
-- **Returns**: 5-field verified triage brief including severity, primary CWE, exploitability rating, false-positive analysis, and hardened fix.
+Live KIN model triage (5-field brief). Params: `scenario_desc` (required), `user_payload`, `defense_goal`. If the model Space is unreachable or times out, it returns a **clearly-labeled rule-engine fallback** — check the `engine` field.
 
 ### 2. `kin_scan_code`
-Scans a source file or git diff for high-severity vulnerabilities, OWASP Top 10 flaws, and hardcoded secrets.
-- **Parameters**:
-  - `code` (required): Code content or diff hunk.
-  - `filename` (optional): Filename or language context.
-- **Returns**: Finding count, rule matches, and remediation instructions.
+Instant deterministic CWE rule scan (offline, regex). Params: `code` (required), `filename`. Results are rule-engine output — label them accordingly; not model inference.
 
 ### 3. `kin_explain_cve`
-Explains known CVE mechanics, root cause analysis, and remediation steps.
-- **Parameters**:
-  - `cve_id` (required): CVE identifier (e.g. `CVE-2023-4863`).
-  - `context` (optional): Affected library or runtime environment.
+Official NVD record: description, CVSS score/vector, weaknesses, references. Params: `cve_id` (required, e.g. `CVE-2023-4863`), `context` (informational). Never fabricate CVE facts; if NVD lookup fails, say so.
 
-## 5-Field Triage Standard
-
-All KIN security outputs follow the strict 5-field verification rubric:
-1. **Severity & Risk Level**: Critical, High, Medium, Low, or Informational.
-2. **Primary CWE**: Root cause categorization (e.g., CWE-89, CWE-78, CWE-22).
-3. **Exploitability Assessment**: Realistic evaluation of attack preconditions.
-4. **False-Positive Evaluation**: Defense-in-depth context explaining why common SAST scanners may over-flag benign usage.
-5. **Defensive Remediation**: Concrete, production-grade code fix with parameterized or sandboxed implementations.
+## Honesty Rules
+1. **Always attribute the engine**: rule-engine results are regex-level; model results come from the live Space and are AI-analysis aids, not formal audit artifacts.
+2. **Correct counts**: the dataset is `1,637` DPO pairs (not 1,635).
+3. **No fake verification**: never claim a finding was "verified by the model" unless `engine` in the tool response says the model produced it.
+4. Treat all KIN output as a starting point; validate critical findings with a replayable check (PoC, test, scanner) before acting.

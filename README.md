@@ -5,37 +5,35 @@
 [![Space Demo](https://img.shields.io/badge/Space-Live%20Demo-orange?logo=huggingface)](https://huggingface.co/spaces/nyxspecter4/kin-cybersec)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A multi-agent cybersecurity triage, vulnerability verification, and code auditing plugin for **Google Antigravity**, **Claude Code**, **Cursor**, and **Codex**. Powered by [`nyxspecter4/kin-sft-lora`](https://huggingface.co/nyxspecter4/kin-sft-lora).
+A multi-agent cybersecurity triage, vulnerability verification, and code auditing plugin for **Google Antigravity**, **Claude Code**, **Cursor**, and **Codex**, powered by [`nyxspecter4/kin-sft-lora`](https://huggingface.co/nyxspecter4/kin-sft-lora).
 
 ---
 
 ## Features
 
-- **5-Field Verified Triage**: Instant analysis of severity, CWE mapping, exploitability, false-positive risk, and AST-invariant defensive patches.
-- **Multi-Host Compatibility**: Works out of the box with Antigravity, Claude Code, Cursor, and any MCP-compliant client.
-- **Zero-Cloud-Cost Inference**: Connects directly to the live Hugging Face Space endpoint (`nyxspecter4/kin-cybersec`) with local heuristic fallback.
-- **Local Ollama Support**: Works 100% offline when paired with `ollama run hf.co/nyxspecter4/kin-sft-lora`.
+- **Live Model Triage**: `kin_triage_vulnerability` calls the KIN model (`kin-sft-lora` Q4_K_M) through the public [`nyxspecter4/kin-cybersec`](https://huggingface.co/spaces/nyxspecter4/kin-cybersec) Space when reachable.
+- **Deterministic Rule Scan**: `kin_scan_code` runs an instant, offline CWE pattern scan (SQLi, command injection, XSS, path traversal, SSRF, secrets, JWT confusion). Output is clearly labeled as rule-engine results, not model analysis.
+- **Real CVE Data**: `kin_explain_cve` fetches official NVD records (description, CVSS, weaknesses, references) — never invented CVE facts.
+- **Multi-Host Compatibility**: Manifests for Antigravity, Claude Code, Cursor, and Codex; any MCP-compliant client via `mcp.json`.
+- **Honest Fallback**: If the model is unreachable, triage falls back to the rule engine and says so in the response.
 
 ---
 
 ## Installation
 
 ### 1. Google Antigravity
-The plugin is automatically discovered when placed in your global config:
+Place in your global plugin directory:
 ```bash
-# Global plugin directory
 ~/.gemini/config/plugins/kin-security
 ```
 
 ### 2. Claude Code
-Install via plugin command:
-```text
+```
 /plugin install NyxSpecter4/kin-security-plugin
 ```
 
 ### 3. Cursor
-Add directly from Cursor command palette or settings:
-```text
+```
 /add-plugin https://github.com/NyxSpecter4/kin-security-plugin
 ```
 
@@ -58,9 +56,9 @@ Add to your `mcp.json`:
 
 | Tool | Parameters | Description |
 | :--- | :--- | :--- |
-| `kin_triage_vulnerability` | `scenario_desc`, `user_payload`, `defense_goal` | Full 5-field triage brief for code or vulnerability reports. |
-| `kin_scan_code` | `code`, `filename` | Rapid scan for OWASP Top 10 vulnerabilities and hardcoded secrets. |
-| `kin_explain_cve` | `cve_id`, `context` | Technical breakdown of CVE mechanics and verified remediation. |
+| `kin_triage_vulnerability` | `scenario_desc`, `user_payload`, `defense_goal` | Live KIN model triage; labeled rule-engine fallback if the model is offline. |
+| `kin_scan_code` | `code`, `filename` | Instant deterministic CWE rule scan (labeled as regex-level). |
+| `kin_explain_cve` | `cve_id`, `context` | Official NVD record for a CVE: description, CVSS, weaknesses, references. |
 
 ---
 
@@ -76,7 +74,8 @@ kin-security-plugin/
 ├── .codex-plugin             # Codex host manifest
 ├── mcp-server/
 │   ├── index.cjs             # JSON-RPC 2.0 stdio MCP server
-│   └── test-client.cjs       # End-to-end MCP test suite
+│   ├── test-client.cjs       # MCP smoke test
+│   └── live-test.cjs         # End-to-end test incl. NVD lookup
 ├── skills/
 │   └── kin-security/
 │       └── SKILL.md          # Agent instructions & prompt engineering
@@ -84,6 +83,14 @@ kin-security-plugin/
 ```
 
 ## Model Lineage
-* **Model**: [`nyxspecter4/kin-sft-lora`](https://huggingface.co/nyxspecter4/kin-sft-lora) (3B Qwen2.5 base with LoRA weights, 1,084+ downloads).
-* **Dataset**: [`nyxspecter4/kin-cyber-dpo-v2`](https://huggingface.co/datasets/nyxspecter4/kin-cyber-dpo-v2) (1,635 DPO pairs).
-* **Open LLM Leaderboard**: Evaluated via Hugging Face Open LLM Leaderboard.
+* **Model**: [`nyxspecter4/kin-sft-lora`](https://huggingface.co/nyxspecter4/kin-sft-lora) (3B Qwen2.5 + LoRA; Q4_K_M GGUF in-repo).
+* **Dataset**: [`nyxspecter4/kin-cyber-dpo-v2`](https://huggingface.co/datasets/nyxspecter4/kin-cyber-dpo-v2) (1,637 DPO pairs; 5 viewer configs).
+* **Live endpoint**: [`nyxspecter4/kin-cybersec`](https://huggingface.co/spaces/nyxspecter4/kin-cybersec) (CPU, Q4_K_M).
+
+## Environment
+* `KIN_SPACE_URL` — override the Space base URL (default: `https://nyxspecter4-kin-cybersec.hf.space`).
+* `KIN_MODEL_TIMEOUT_MS` — model call timeout (default `75000`; free-tier cold starts can take 30-60s).
+
+## License
+
+MIT © [NyxSpecter4](https://github.com/NyxSpecter4)

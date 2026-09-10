@@ -1,6 +1,6 @@
 {
   "name": "kin-security-plugin",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Multi-agent cybersecurity triage and vulnerability verification plugin",
   "main": "mcp-server/index.cjs",
   "scripts": {
