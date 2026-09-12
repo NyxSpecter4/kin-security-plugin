@@ -1,0 +1,22 @@
+name: 'KIN Security Code Reviewer'
+description: 'Automated PR vulnerability triage and secure code review powered by nyxspecter4/kin-sft-lora'
+author: 'NyxSpecter4'
+inputs:
+  github-token:
+    description: 'GitHub token for fetching diffs and posting review comments'
+    required: false
+    default: ${{ github.token }}
+  severity-threshold:
+    description: 'Minimum severity to report: Critical, High, Medium, Low'
+    required: false
+    default: 'High'
+  fail-on-vulnerability:
+    description: 'Whether to fail the workflow run if vulnerabilities are found'
+    required: false
+    default: 'false'
+runs:
+  using: 'node20'
+  main: 'dist/index.cjs'
+branding:
+  icon: 'shield'
+  color: 'blue'
