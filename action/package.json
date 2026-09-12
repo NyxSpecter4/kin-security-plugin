@@ -1,0 +1,11 @@
+{
+  "name": "kin-security-action",
+  "version": "1.0.0",
+  "description": "GitHub Action for PR vulnerability triage powered by nyxspecter4/kin-sft-lora",
+  "main": "dist/index.cjs",
+  "scripts": {
+    "test": "node dist/index.cjs --dry-run"
+  },
+  "author": "NyxSpecter4 <kiran@kinetigor.com>",
+  "license": "MIT"
+}
