@@ -1,4 +1,4 @@
-# KIN Cybersecurity Plugin (`kin-security-plugin`)
+﻿# KIN Cybersecurity Plugin (`kin-security-plugin`)
 
 [![Model on Hugging Face](https://img.shields.io/badge/Model-nyxspecter4%2Fkin--sft--lora-blue?logo=huggingface)](https://huggingface.co/nyxspecter4/kin-sft-lora)
 [![Dataset on Hugging Face](https://img.shields.io/badge/Dataset-nyxspecter4%2Fkin--cyber--dpo--v2-green?logo=huggingface)](https://huggingface.co/datasets/nyxspecter4/kin-cyber-dpo-v2)
@@ -91,6 +91,13 @@ kin-security-plugin/
 * `KIN_SPACE_URL` — override the Space base URL (default: `https://nyxspecter4-kin-cybersec.hf.space`).
 * `KIN_MODEL_TIMEOUT_MS` — model call timeout (default `75000`; free-tier cold starts can take 30-60s).
 
+---
+
+## From the Kinetigor engine room
+
+Built at [BountyWarz](https://bountywarz.com) — the cyber-education platform behind this tool. More from the same studio: [kin-security-action](https://github.com/NyxSpecter4/kin-security-action) · [kin-security-plugin](https://github.com/NyxSpecter4/kin-security-plugin) · [monk-plugin](https://github.com/NyxSpecter4/monk-plugin) · [Kinetigor Desk](https://kinetigor.com).
+
 ## License
 
 MIT © [NyxSpecter4](https://github.com/NyxSpecter4)
+
