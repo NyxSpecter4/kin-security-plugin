@@ -1,0 +1,165 @@
+{
+  "categories_version": "kin-security-eval/categories-v0.1",
+  "cases": [
+    {
+      "id": "V1-sqli-concat",
+      "category": "valid",
+      "name": "SQL injection via string concatenation",
+      "filename": "v1.js",
+      "code": "const q = \"SELECT * FROM users WHERE name = \" + req.body.name;\ndb.query(q);",
+      "expected_rule_ids": ["CWE-89"]
+    },
+    {
+      "id": "V2-cmd-injection",
+      "category": "valid",
+      "name": "OS command injection via exec concat",
+      "filename": "v2.js",
+      "code": "child_process.exec(\"ping \" + req.query.host);",
+      "expected_rule_ids": ["CWE-78"]
+    },
+    {
+      "id": "V3-xss-innerhtml",
+      "category": "valid",
+      "name": "XSS via unsanitized innerHTML",
+      "filename": "v3.js",
+      "code": "el.innerHTML = req.body.comment;",
+      "expected_rule_ids": ["CWE-79"]
+    },
+    {
+      "id": "V4-hardcoded-secret",
+      "category": "valid",
+      "name": "Hardcoded API key literal",
+      "filename": "v4.js",
+      "code": "const api_key = \"sk_live_AbCdEfGhIjKlMnOp12345\";",
+      "expected_rule_ids": ["CWE-798"]
+    },
+    {
+      "id": "V5-ssrf-fetch",
+      "category": "valid",
+      "name": "SSRF via fetch of user-supplied URL",
+      "filename": "v5.js",
+      "code": "const r = await fetch(req.query.url);\nreturn r.json();",
+      "expected_rule_ids": ["CWE-918"]
+    },
+    {
+      "id": "C1-pure-logic",
+      "category": "clean",
+      "name": "Arithmetic and formatting only",
+      "filename": "c1.js",
+      "code": "const total = cart.items.reduce((sum, item) => sum + item.price * item.qty, 0);\nreturn { total, currency: \"USD\" };",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "C2-static-query",
+      "category": "clean",
+      "name": "Static query with no user input",
+      "filename": "c2.js",
+      "code": "app.get(\"/stats\", async (req, res) => {\n  const rows = await db.all(\"SELECT count(*) FROM events\");\n  res.json({ count: rows[0].count });\n});",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "C3-textcontent",
+      "category": "clean",
+      "name": "Safe DOM text assignment",
+      "filename": "c3.js",
+      "code": "el.textContent = sanitize(userInput);\nconsole.log(\"rendered\", el.textContent);",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "A1-comment-mention",
+      "category": "adversarial",
+      "name": "Security note in a comment mentions a dangerous API",
+      "filename": "a1.js",
+      "code": "// SECURITY NOTE: never use document.write(...) with user input here - see the OWASP XSS cheat sheet.",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "A2-tutorial-password-string",
+      "category": "adversarial",
+      "name": "Documentation string containing a placeholder credential pattern",
+      "filename": "a2.js",
+      "code": "const example = 'a common weak pattern is password: \"documentation_placeholder_word\" - never hardcode secrets';",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "A3-legacy-note-exec",
+      "category": "adversarial",
+      "name": "Changelog comment describing the removed anti-pattern",
+      "filename": "a3.js",
+      "code": "// legacy anti-pattern removed in v2: exec(\"cat \" + file) -> now execFile(\"cat\", [file])",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "A4-test-fixture-marker",
+      "category": "adversarial",
+      "name": "Test-suite comment describing what the scanner should flag",
+      "filename": "a4.js",
+      "code": "// in tests we assert the scanner flags this shape: token: \"aaaaaaaaaaaaaaaaaaaaaaaa\"",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "X1-parameterized-query",
+      "category": "contradictory",
+      "name": "Correctly parameterized query that matches the SQLi regex",
+      "filename": "x1.js",
+      "code": "db.query(\"SELECT id, name FROM users WHERE email = ?\", [email]);",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "X2-sanitized-dom-insertion",
+      "category": "contradictory",
+      "name": "DOM insertion with explicit sanitizer",
+      "filename": "x2.js",
+      "code": "el.innerHTML = DOMPurify.sanitize(userHtml);",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "M1-python-deserialization",
+      "category": "missing",
+      "name": "Unsafe deserialization of request body (CWE-502, not rule-covered)",
+      "filename": "m1.py",
+      "code": "import pickle\ndata = pickle.loads(request.body)",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "M2-insecure-random-token",
+      "category": "missing",
+      "name": "Session token from Math.random (CWE-338, not rule-covered)",
+      "filename": "m2.js",
+      "code": "function sessionToken() { return Math.random().toString(36).slice(2); }",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "M3-open-redirect",
+      "category": "missing",
+      "name": "Open redirect from query parameter (CWE-601, not rule-covered)",
+      "filename": "m3.js",
+      "code": "app.get(\"/go\", (req, res) => res.redirect(req.query.url));",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "I1-empty-code",
+      "category": "invalid",
+      "name": "Empty code string must not crash",
+      "filename": "i1.js",
+      "code": "",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "I2-whitespace-only",
+      "category": "invalid",
+      "name": "Whitespace-only code must not crash",
+      "filename": "i2.js",
+      "code": "   \n\t  ",
+      "expected_rule_ids": []
+    },
+    {
+      "id": "I3-null-code",
+      "category": "invalid",
+      "name": "null code argument must not crash",
+      "filename": "i3.js",
+      "code": null,
+      "expected_rule_ids": []
+    }
+  ]
+}

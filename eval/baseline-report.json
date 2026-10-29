@@ -1,0 +1,348 @@
+{
+  "report_id": "kin-security-eval/baseline-report",
+  "harness_version": "kin-security-eval/harness-v0.1",
+  "categories_version": "kin-security-eval/categories-v0.1",
+  "generated_at": "2026-10-29T15:06:30.495Z",
+  "environment": {
+    "node": "v22.20.0"
+  },
+  "status_labels": {
+    "measurement": "MEASURED — executed this run against the live MCP server artifact",
+    "scope": "deterministic rule engine (kin_scan_code) only; no model calls, no network",
+    "receipt_class": "BUILDER — built and measured by the same seat; no independent reproduction yet"
+  },
+  "timing": {
+    "server_spawn_and_selftest_ms": 33,
+    "scan_loop_ms": 50,
+    "total_harness_ms": 83,
+    "per_case_ms": [
+      {
+        "id": "V1-sqli-concat",
+        "ms": 42
+      },
+      {
+        "id": "V2-cmd-injection",
+        "ms": 1
+      },
+      {
+        "id": "V3-xss-innerhtml",
+        "ms": 1
+      },
+      {
+        "id": "V4-hardcoded-secret",
+        "ms": 0
+      },
+      {
+        "id": "V5-ssrf-fetch",
+        "ms": 0
+      },
+      {
+        "id": "C1-pure-logic",
+        "ms": 0
+      },
+      {
+        "id": "C2-static-query",
+        "ms": 0
+      },
+      {
+        "id": "C3-textcontent",
+        "ms": 0
+      },
+      {
+        "id": "A1-comment-mention",
+        "ms": 1
+      },
+      {
+        "id": "A2-tutorial-password-string",
+        "ms": 0
+      },
+      {
+        "id": "A3-legacy-note-exec",
+        "ms": 0
+      },
+      {
+        "id": "A4-test-fixture-marker",
+        "ms": 0
+      },
+      {
+        "id": "X1-parameterized-query",
+        "ms": 0
+      },
+      {
+        "id": "X2-sanitized-dom-insertion",
+        "ms": 1
+      },
+      {
+        "id": "M1-python-deserialization",
+        "ms": 0
+      },
+      {
+        "id": "M2-insecure-random-token",
+        "ms": 0
+      },
+      {
+        "id": "M3-open-redirect",
+        "ms": 0
+      },
+      {
+        "id": "I1-empty-code",
+        "ms": 0
+      },
+      {
+        "id": "I2-whitespace-only",
+        "ms": 0
+      },
+      {
+        "id": "I3-null-code",
+        "ms": 0
+      }
+    ],
+    "mean_case_ms": 2,
+    "case_count": 20
+  },
+  "metrics": {
+    "true_positives": 5,
+    "false_negatives": 0,
+    "false_positives": 6,
+    "true_negatives": 3,
+    "known_coverage_gaps": 3,
+    "unexpected_hits_on_gap_cases": 0,
+    "invalid_robustness": "3/3",
+    "precision": 0.45454545454545453,
+    "recall_with_known_gaps_as_fn": 0.625,
+    "violations": 6,
+    "by_category": {
+      "valid": {
+        "total": 5,
+        "pass": 5,
+        "violation": 0,
+        "expected_miss": 0
+      },
+      "clean": {
+        "total": 3,
+        "pass": 3,
+        "violation": 0,
+        "expected_miss": 0
+      },
+      "adversarial": {
+        "total": 4,
+        "pass": 0,
+        "violation": 4,
+        "expected_miss": 0
+      },
+      "contradictory": {
+        "total": 2,
+        "pass": 0,
+        "violation": 2,
+        "expected_miss": 0
+      },
+      "missing": {
+        "total": 3,
+        "pass": 0,
+        "violation": 0,
+        "expected_miss": 3
+      },
+      "invalid": {
+        "total": 3,
+        "pass": 3,
+        "violation": 0,
+        "expected_miss": 0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "V1-sqli-concat",
+      "category": "valid",
+      "name": "SQL injection via string concatenation",
+      "status": "PASS",
+      "matched": [
+        "CWE-89"
+      ],
+      "missing": [],
+      "note": "expected rule(s) fired"
+    },
+    {
+      "id": "V2-cmd-injection",
+      "category": "valid",
+      "name": "OS command injection via exec concat",
+      "status": "PASS",
+      "matched": [
+        "CWE-78"
+      ],
+      "missing": [],
+      "note": "expected rule(s) fired"
+    },
+    {
+      "id": "V3-xss-innerhtml",
+      "category": "valid",
+      "name": "XSS via unsanitized innerHTML",
+      "status": "PASS",
+      "matched": [
+        "CWE-79"
+      ],
+      "missing": [],
+      "note": "expected rule(s) fired"
+    },
+    {
+      "id": "V4-hardcoded-secret",
+      "category": "valid",
+      "name": "Hardcoded API key literal",
+      "status": "PASS",
+      "matched": [
+        "CWE-798"
+      ],
+      "missing": [],
+      "note": "expected rule(s) fired"
+    },
+    {
+      "id": "V5-ssrf-fetch",
+      "category": "valid",
+      "name": "SSRF via fetch of user-supplied URL",
+      "status": "PASS",
+      "matched": [
+        "CWE-918"
+      ],
+      "missing": [],
+      "note": "expected rule(s) fired"
+    },
+    {
+      "id": "C1-pure-logic",
+      "category": "clean",
+      "name": "Arithmetic and formatting only",
+      "status": "PASS",
+      "matched": [],
+      "note": "no findings (correct)"
+    },
+    {
+      "id": "C2-static-query",
+      "category": "clean",
+      "name": "Static query with no user input",
+      "status": "PASS",
+      "matched": [],
+      "note": "no findings (correct)"
+    },
+    {
+      "id": "C3-textcontent",
+      "category": "clean",
+      "name": "Safe DOM text assignment",
+      "status": "PASS",
+      "matched": [],
+      "note": "no findings (correct)"
+    },
+    {
+      "id": "A1-comment-mention",
+      "category": "adversarial",
+      "name": "Security note in a comment mentions a dangerous API",
+      "status": "VIOLATION",
+      "matched": [
+        "CWE-79"
+      ],
+      "note": "false positive: CWE-79 fired on ground-truth-negative case"
+    },
+    {
+      "id": "A2-tutorial-password-string",
+      "category": "adversarial",
+      "name": "Documentation string containing a placeholder credential pattern",
+      "status": "VIOLATION",
+      "matched": [
+        "CWE-798"
+      ],
+      "note": "false positive: CWE-798 fired on ground-truth-negative case"
+    },
+    {
+      "id": "A3-legacy-note-exec",
+      "category": "adversarial",
+      "name": "Changelog comment describing the removed anti-pattern",
+      "status": "VIOLATION",
+      "matched": [
+        "CWE-78"
+      ],
+      "note": "false positive: CWE-78 fired on ground-truth-negative case"
+    },
+    {
+      "id": "A4-test-fixture-marker",
+      "category": "adversarial",
+      "name": "Test-suite comment describing what the scanner should flag",
+      "status": "VIOLATION",
+      "matched": [
+        "CWE-798"
+      ],
+      "note": "false positive: CWE-798 fired on ground-truth-negative case"
+    },
+    {
+      "id": "X1-parameterized-query",
+      "category": "contradictory",
+      "name": "Correctly parameterized query that matches the SQLi regex",
+      "status": "VIOLATION",
+      "matched": [
+        "CWE-89"
+      ],
+      "note": "false positive: CWE-89 fired on ground-truth-negative case"
+    },
+    {
+      "id": "X2-sanitized-dom-insertion",
+      "category": "contradictory",
+      "name": "DOM insertion with explicit sanitizer",
+      "status": "VIOLATION",
+      "matched": [
+        "CWE-79"
+      ],
+      "note": "false positive: CWE-79 fired on ground-truth-negative case"
+    },
+    {
+      "id": "M1-python-deserialization",
+      "category": "missing",
+      "name": "Unsafe deserialization of request body (CWE-502, not rule-covered)",
+      "status": "EXPECTED_MISS",
+      "matched": [],
+      "note": "coverage gap confirmed: rule set does not cover this vulnerability class"
+    },
+    {
+      "id": "M2-insecure-random-token",
+      "category": "missing",
+      "name": "Session token from Math.random (CWE-338, not rule-covered)",
+      "status": "EXPECTED_MISS",
+      "matched": [],
+      "note": "coverage gap confirmed: rule set does not cover this vulnerability class"
+    },
+    {
+      "id": "M3-open-redirect",
+      "category": "missing",
+      "name": "Open redirect from query parameter (CWE-601, not rule-covered)",
+      "status": "EXPECTED_MISS",
+      "matched": [],
+      "note": "coverage gap confirmed: rule set does not cover this vulnerability class"
+    },
+    {
+      "id": "I1-empty-code",
+      "category": "invalid",
+      "name": "Empty code string must not crash",
+      "status": "PASS",
+      "matched": [],
+      "note": "no crash; valid JSON with findings array"
+    },
+    {
+      "id": "I2-whitespace-only",
+      "category": "invalid",
+      "name": "Whitespace-only code must not crash",
+      "status": "PASS",
+      "matched": [],
+      "note": "no crash; valid JSON with findings array"
+    },
+    {
+      "id": "I3-null-code",
+      "category": "invalid",
+      "name": "null code argument must not crash",
+      "status": "PASS",
+      "matched": [],
+      "note": "no crash; valid JSON with findings array"
+    }
+  ],
+  "limitations": [
+    "Ground truth is author-labeled (categories v0.1); no independent review yet",
+    "This case set is the development set; a held-out split ships with the backend PR",
+    "Rule engine is regex-based and JS-focused; 'missing' cases document known blind spots",
+    "Baseline is expected-red: adversarial and contradictory categories document measured false-positive classes"
+  ]
+}
