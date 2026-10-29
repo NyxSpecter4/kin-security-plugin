@@ -1,0 +1,58 @@
+{
+  "receipt_id": "kin-security-eval/BASELINE-2026-10-29",
+  "date": "2026-10-29",
+  "specimen": {
+    "repo": "NyxSpecter4/kin-security-plugin",
+    "ref": "main",
+    "commit_sha": "c247e417669c94dd8b34285bfde81876bf3a846a",
+    "version": "1.1.0",
+    "core_files": { "mcp-server/index.cjs": "440 lines, sha 3c4745bb4f79ec1f23f8a916e153b736091ae424", "mcp-server/test-client.cjs": "sha a8604ef53ca2a063a4f7e3beff77ca675ce4ee16", "mcp-server/live-test.cjs": "sha edf3522cf1daa300b9505266557063a7aed718ff" }
+  },
+  "environment": { "node": "v22.20.0", "runner": "Mistral seat, upgraded sandbox", "network": "outbound HTTP verified working (curl probes)" },
+  "measurements": [
+    {
+      "id": "M1-existing-test-suite",
+      "command": "node mcp-server/test-client.cjs",
+      "status": "VERIFIED (executed this session)",
+      "result": "PASS (initialize + tools/list + kin_triage fallback; exit 0)",
+      "wall_clock_s": 75.7,
+      "cpu_s": 0.047,
+      "finding": "99.9% of wall time is network wait, not computation. The kin_triage_vulnerability step blocks for the full MODEL_TIMEOUT_MS (75s) before falling back to the rule engine."
+    },
+    {
+      "id": "M2-model-latency",
+      "command": "Gradio POST + SSE stream, 2 samples (cmd-injection scenario, SQLi scenario)",
+      "status": "MEASURED (2 samples; latency varies per run - treat as approximate)",
+      "result": "complete events received in both runs; SQLi sample ~117s",
+      "finding": "Real KIN model inference (~117s+) EXCEEDS the default 75s timeout. With defaults, the live model path is effectively unreachable in tests AND production: every triage call burns the full timeout then falls back. model_status 'live' is decorative at default settings."
+    },
+    {
+      "id": "M3-rule-engine-deterministic-baseline",
+      "command": "MCP tools/call kin_scan_code, 3 hand probes, then formalized as eval/harness.cjs 20-case run",
+      "status": "VERIFIED (executed this session)",
+      "result": {
+        "hand_probe_vulnerable_multi_rule": "4 findings (CWE-89, CWE-78, CWE-79, CWE-798) - all expected, ~61ms",
+        "hand_probe_clean_snippet": "0 findings - correct, ~63ms",
+        "hand_probe_false_positive_probe": "2 findings on comment-only + tutorial-string content - ground truth 0"
+      },
+      "finding": "Rule engine is deterministic and instant (~60ms/case). See eval/baseline-report.json for the formal 20-case harness run: TP 5, TN 3, FP 6, FN 0, known coverage gaps 3, robustness 3/3, precision 45.5%, recall (gaps=FN) 62.5%."
+    },
+    {
+      "id": "M4-rules-duplication",
+      "command": "source comparison plugin index.cjs vs action dist/index.cjs",
+      "status": "VERIFIED (read both)",
+      "result": "kin-security-action/dist/index.cjs embeds its OWN copy of SECURITY_RULES, structurally similar to the plugin's. Two rule sets exist in the estate with no shared version.",
+      "finding": "Rule drift risk: two independently-editable copies of the CWE rules. Any rules revision must version and share one source or the repos silently diverge."
+    }
+  ],
+  "unexecuted": [
+    { "id": "U1", "item": "live-test.cjs (NVD lookup phases)", "reason": "not run as suite this session; NVD endpoint itself verified reachable (HTTP 200, 0.64s)", "status": "UNEXECUTED" }
+  ],
+  "receipt_class": "BUILDER (built and measured by the same seat; no independent reproduction yet)",
+  "next_build": [
+    "DONE (this branch): eval harness v0.1 - versioned categories, 20-case six-category set, TP/FP/FN metrics + timing, gate selftest, machine-readable report",
+    "NEXT: backend abstraction - provider interface (HF Space / OpenAI-compatible / fake server), env-only keys, timeout corrected against measured latency (~117s vs 75s default)",
+    "NEXT: multi-turn revision capture - initial answer + revision history + final per case",
+    "NEXT: held-out case split reported separately from the development set"
+  ]
+}
