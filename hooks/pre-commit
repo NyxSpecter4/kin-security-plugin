@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# KIN Security pre-commit hook — local enforcement surface.
+# Install:  cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+# Blocks the commit when any staged JS/TS file gets a policy BLOCK.
+set -euo pipefail
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "kin-security: node not found — refusing to skip the gate (fail-closed). Unstage or install node." >&2
+  exit 1
+fi
+
+PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+staged=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|cjs|mjs|ts)$' || true)
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+status=0
+for f in $staged; do
+  if [ ! -f "$f" ]; then continue; fi
+  if ! node "$PLUGIN_DIR/cli/index.cjs" check "$f" --policy "$PLUGIN_DIR/policies/default.json"; then
+    status=2
+  fi
+done
+
+if [ "$status" -ne 0 ]; then
+  echo "" >&2
+  echo "kin-security: BLOCK — fix the findings or obtain a signed receipt before landing." >&2
+  echo "inspect -> repair -> rescan -> attest -> verify -> land" >&2
+fi
+exit $status

@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "kin.security.receipt/v1",
+  "title": "KIN Receipt v1",
+  "type": "object",
+  "required": ["schema", "receipt_id", "created_at", "producer", "subject", "agent", "engines", "findings", "policy", "evidence"],
+  "properties": {
+    "schema": { "const": "kin.security.receipt/v1" },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^01[0-9a-f]{30}$",
+      "description": "Content-addressed: '01' + first 30 hex of the pre-image canonical sha256. Recomputed by the verifier; a mismatch fails verification."
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "producer": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "properties": {
+        "repo": { "type": ["string", "null"] },
+        "commit": { "type": ["string", "null"] },
+        "scanned_file": { "type": ["string", "null"] },
+        "diff_sha256": {
+          "type": ["string", "null"],
+          "description": "sha256 of the exact bytes scanned. The receipt is bound to this input."
+        },
+        "prev_receipt": {
+          "type": ["string", "null"],
+          "description": "receipt_id of a prior (e.g. BLOCKED) receipt in a repair loop. Enables the Athelgard FIXED_RERUN state."
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "description": "Which AI agent produced the change, when known. Raw prompts are NEVER stored — only hashes.",
+      "properties": {
+        "host": { "type": ["string", "null"] },
+        "session_id": { "type": ["string", "null"] },
+        "model": { "type": ["string", "null"] },
+        "prompt_sha256": { "type": ["string", "null"] }
+      }
+    },
+    "engines": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "version", "mode"],
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "type": "string" },
+          "mode": { "type": "string", "enum": ["deterministic", "model"] }
+        }
+      }
+    },
+    "findings": { "type": "array", "items": { "$ref": "kin.security.finding/v1" } },
+    "policy": {
+      "type": "object",
+      "required": ["sha256", "outcome"],
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "sha256": { "type": "string", "description": "sha256 of the canonical policy object actually evaluated" },
+        "outcome": { "type": "string", "enum": ["pass", "block"] },
+        "decisions": { "type": "array" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["canonical_sha256", "signature"],
+      "properties": {
+        "canonical_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256 of the canonical pre-image (receipt minus receipt_id, hash field nulled). Recomputed by the verifier."
+        },
+        "signature": {
+          "type": "object",
+          "required": ["alg", "key_id", "value"],
+          "properties": {
+            "alg": { "const": "ed25519" },
+            "key_id": { "type": "string", "description": "'ed25519:' + first 16 hex of sha256(SPKI DER)" },
+            "value": { "type": "string", "description": "base64 Ed25519 signature over the canonical signed body" }
+          }
+        }
+      }
+    }
+  }
+}

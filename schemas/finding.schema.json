@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "kin.security.finding/v1",
+  "title": "KIN Security Normalized Finding v1",
+  "type": "object",
+  "required": ["schema", "finding_id", "source", "claim", "evidence", "confidence"],
+  "properties": {
+    "schema": { "const": "kin.security.finding/v1" },
+    "finding_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Deterministic content fingerprint: sha256 over the canonical finding payload (excluding the id). Same bytes + filename + engine => same id, every run."
+    },
+    "source": {
+      "type": "object",
+      "required": ["engine", "kind", "engine_version"],
+      "properties": {
+        "engine": { "type": "string", "enum": ["kin-rule", "kin-model"] },
+        "kind": { "type": "string", "enum": ["deterministic", "model"] },
+        "engine_version": { "type": "string" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": ["cwe", "severity", "name"],
+      "properties": {
+        "cwe": { "type": "string", "pattern": "^CWE-\\d+$" },
+        "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+        "name": { "type": "string" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["file", "line", "snippet_sha256"],
+      "description": "Coordinates and hashes ONLY. Raw source code is never stored in a finding (redaction law).",
+      "properties": {
+        "file": { "type": ["string", "null"] },
+        "line": { "type": ["integer", "null"], "minimum": 1 },
+        "snippet_sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["observed", "advisory"],
+      "description": "observed = deterministic engine output. advisory = model opinion. A model opinion never silently becomes scanner evidence."
+    }
+  }
+}
