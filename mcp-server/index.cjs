@@ -110,6 +110,43 @@ const SECURITY_RULES = [
     explanation: "JWT validation accepts unsigned tokens (alg: none) or disables cryptographic signature verification.",
     remediation: 'Pin the expected signing algorithm explicitly (e.g., algorithms: ["HS256"]) and reject unsigned tokens.',
   },
+  {
+    id: "CWE-1321",
+    name: "Prototype Pollution",
+    severity: "High",
+    patterns: [
+      /__proto__/,
+      /constructor\s*\[\s*['"]prototype['"]\s*\]/,
+      /Object\.assign\s*\(\s*{},\s*req\./,
+    ],
+    explanation: "Untrusted input is merged into object prototypes, potentially allowing property injection that alters application behavior or enables privilege escalation.",
+    remediation: "Use Object.create(null) for dictionaries, freeze prototypes, or use libraries that protect against prototype pollution (e.g. lodash with safe merges).",
+  },
+  {
+    id: "CWE-601",
+    name: "Open Redirect",
+    severity: "Medium",
+    patterns: [
+      /res\.redirect\s*\(\s*req\./,
+      /location\s*=\s*req\./,
+      /window\.location\s*=\s*req\./,
+    ],
+    explanation: "Application redirects users to attacker-controlled URLs, enabling phishing and credential theft via trusted domain.",
+    remediation: "Validate redirect targets against an allowlist of relative paths or known domains before issuing redirects.",
+  },
+  {
+    id: "CWE-502",
+    name: "Deserialization of Untrusted Data",
+    severity: "Critical",
+    patterns: [
+      /JSON\.parse\s*\(\s*req\./,
+      /unserialize\s*\(/,
+      /pickle\.loads/,
+    ],
+    explanation: "Untrusted data is deserialized without validation, potentially allowing remote code execution via crafted payloads.",
+    remediation: "Avoid deserializing untrusted input. Use safe formats (JSON with schema validation) and never deserialize binary formats from untrusted sources.",
+  },
+
 ];
 
 function ruleBasedScan(code) {
