@@ -4,7 +4,9 @@
   "description": "Multi-agent cybersecurity triage and vulnerability verification plugin",
   "main": "mcp-server/index.cjs",
   "scripts": {
-    "test": "node mcp-server/test-client.cjs"
+    "test": "node mcp-server/test-client.cjs",
+    "test:eval": "node eval/harness.cjs",
+    "test:live-path": "node eval/triage-live-path-test.cjs"
   },
   "keywords": [
     "cybersecurity",
