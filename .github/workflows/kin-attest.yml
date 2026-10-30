@@ -1,0 +1,84 @@
+name: kin-attest
+# KIN Security Assurance CI: acceptance battery + signed receipts as artifacts.
+#
+# DOGFOOD MODE (this repo): this repository's own JS is ~80% security fixtures
+# by design (the rule engine even self-flags: its pattern strings match its own
+# rules — see KL-1 in docs/ASSURANCE.md). So here the job gates on the TEST
+# SUITE and mint+upload receipts in report mode.
+#
+# PRODUCT-REPO MODE (one change): remove `|| true` on the attest loop and make
+# this a required check. Then a BLOCK receipt fails CI and merge eligibility
+# follows the receipt: no green receipt, no merge.
+#
+# The CI key is EPHEMERAL: generated per run, only its public half is uploaded
+# next to the receipts. A V1 receipt proves "this exact evidence object was
+# signed by this key" — it is not an org trust anchor (that is V2).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Acceptance battery (this step IS the merge gate)
+        run: node --test tests/*.test.cjs
+
+      - name: Legacy MCP protocol test
+        run: node mcp-server/test-client.cjs
+
+      - name: Generate ephemeral CI signing key
+        run: node cli/index.cjs keygen --name ci --keys .attest-keys
+
+      - name: Attest every JS/CJS/TS file (report mode — receipts minted, findings recorded)
+        run: |
+          set -uo pipefail
+          mkdir -p evidence
+          echo "| file | outcome | findings | receipt_id |" > evidence/SUMMARY.md
+          echo "|---|---|---|---|" >> evidence/SUMMARY.md
+          for f in $(find . -type f \( -name '*.js' -o -name '*.cjs' -o -name '*.ts' \) \
+              -not -path './node_modules/*' -not -path './.git/*' -not -path './.attest-keys/*' | sort); do
+            name=$(echo "$f" | sed 's|^\./||')
+            out="evidence/$(echo "$name" | tr '/' '_').receipt.json"
+            if node cli/index.cjs attest "$f" --key ci --keys .attest-keys \
+                 --policy policies/default.json \
+                 --repo "${GITHUB_REPOSITORY}" --commit "${GITHUB_SHA}" \
+                 --out "$out"; then
+              outcome="pass"
+            else
+              outcome="BLOCK"
+            fi
+            count=$(node -e "const r=require('./$out');console.log(r.findings.length)")
+            rid=$(node -e "const r=require('./$out');console.log(r.receipt_id.slice(0,12))")
+            echo "| $name | $outcome | $count | $rid… |" >> evidence/SUMMARY.md
+          done
+          cat evidence/SUMMARY.md
+          exit 0
+
+      - name: Upload KIN receipts (always — red evidence is evidence)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kin-receipts
+          path: evidence/
+          if-no-files-found: warn
+
+      - name: Upload the CI public key (so anyone can verify the receipts)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kin-ci-public-key
+          path: .attest-keys/ci.pub
+          if-no-files-found: warn

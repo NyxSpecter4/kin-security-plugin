@@ -1,0 +1,9 @@
+# Signing keys NEVER enter version control.
+.attest/
+.attest-keys/
+*.pem
+*.key
+
+node_modules/
+receipts/
+*.receipt.json

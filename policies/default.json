@@ -1,0 +1,11 @@
+{
+  "schema": "kin.security.policy/v1",
+  "name": "default",
+  "rules": [
+    { "severity": ["critical"], "outcome": "block" },
+    { "severity": ["high"], "outcome": "block" },
+    { "severity": ["medium"], "outcome": "warn" },
+    { "severity": ["low"], "outcome": "pass" }
+  ],
+  "suppressions": []
+}
