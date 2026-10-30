@@ -1,13 +1,13 @@
 {
   "name": "kin-security-plugin",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Verification-first security tools for AI coding agents — scan, policy-check, attest, verify",
   "main": "mcp-server/index.cjs",
   "bin": {
     "kin-security": "cli/index.cjs"
   },
   "scripts": {
-    "test": "node --test tests/",
+    "test": "node --test tests/*.test.cjs",
     "test:mcp": "node mcp-server/test-client.cjs",
     "demo": "node cli/index.cjs demo"
   },

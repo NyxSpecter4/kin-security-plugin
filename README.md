@@ -11,9 +11,9 @@ A multi-agent cybersecurity triage, vulnerability verification, and code auditin
 
 ---
 
-## New in v1.2.0 — KIN Security Assurance
+## KIN Security Assurance — new in v1.2.0, claim-contract corrected in v1.2.1
 
-The plugin now produces **signed, reproducible evidence** showing which code change was checked, which engine checked it, what was found, what policy decided, and whether remediation passed:
+The plugin now produces **signed, content-addressed, independently verifiable evidence** showing which code change was checked, which engine checked it, what was found, what policy decided, and whether remediation passed:
 
 ```bash
 kin-security scan <file>                    # normalized findings (deterministic fingerprints)
@@ -29,7 +29,7 @@ The full contract — receipt schema, claim discipline, enforcement matrix, trus
 
 **Claim discipline:** a valid receipt proves *this exact evidence object was signed by this key*. It does not claim reproducible scanning (yet). Receipts are content-addressed, bound to the scanned bytes, redacted (coordinates + hashes, never raw source or secrets), and independently verifiable against any matching public key.
 
-**CI gate:** `.github/workflows/kin-attest.yml` runs the acceptance battery, attests every JS/TS file with an ephemeral per-run key, and uploads the receipts + public key as workflow artifacts — the check fails on BLOCK. **No green receipt, no merge.** `hooks/pre-commit` provides the same gate locally.
+**CI gate (honest labels):** `.github/workflows/kin-attest.yml` runs the acceptance battery — **in this repository, the acceptance battery is the merge gate**. Attestation runs in **report mode**: every JS/TS file is attested with an ephemeral per-run key and the receipts + public key are uploaded as workflow artifacts, but BLOCK receipts do not fail this repo's CI, because this repository is deliberately full of vulnerable fixtures. Product-repository hard enforcement is one change away: remove the report-mode override and make BLOCK terminal — then merge eligibility follows the receipt. `hooks/pre-commit` provides that hard gate locally today.
 
 ---
 

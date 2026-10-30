@@ -253,7 +253,7 @@ rl.on("line", async (line) => {
       result: {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "kin-security", version: "1.2.0" },
+        serverInfo: { name: "kin-security", version: "1.2.1" },
       },
     });
     return;

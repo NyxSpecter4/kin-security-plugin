@@ -67,7 +67,7 @@ test("mcp regression: server speaks JSON-RPC and scans (subprocess)", async () =
   try {
     const init = await rpc(child, { jsonrpc: "2.0", id: 1, method: "initialize", params: {} });
     assert.strictEqual(init.result.serverInfo.name, "kin-security");
-    assert.strictEqual(init.result.serverInfo.version, "1.2.0");
+    assert.strictEqual(init.result.serverInfo.version, "1.2.1");
 
     const tools = await rpc(child, { jsonrpc: "2.0", id: 2, method: "tools/list" });
     const names = tools.result.tools.map((t) => t.name).sort();

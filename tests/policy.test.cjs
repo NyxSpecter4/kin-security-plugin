@@ -8,6 +8,7 @@
  *   [ ] missing policy behaves according to explicit default
  *   [ ] requested-but-missing policy file = hard error (never silent)
  *   [ ] suppression preserved in the receipt decisions
+ *   [ ] advisory findings structurally cannot block (explicit V1 rule)
  */
 
 const test = require("node:test");
@@ -143,4 +144,91 @@ test("policy: invalid policy file (bad outcome value) = hard error", () => {
     () => attest({ code: SQLI_FIXTURE, filename: "db.ts", policyFile: file, privateKey }),
     /outcome must be block\|warn\|pass/
   );
+});
+
+// ── V1 rule: advisory findings structurally cannot block ────────────────
+// Encoded BEFORE model findings enter the receipt pipeline (Captain's
+// ruling): a model opinion (confidence "advisory", source.kind "model")
+// may inform, but can never be the thing that blocks a change.
+
+function advisoryFinding(severity = "critical", cwe = "CWE-89") {
+  return {
+    schema: "kin.security.finding/v1",
+    finding_id: "a".repeat(64),
+    source: { engine: "kin-model", kind: "model", engine_version: "test" },
+    claim: { cwe, severity, name: "model opinion" },
+    evidence: { file: "model.ts", line: null, snippet_sha256: null },
+    confidence: "advisory",
+  };
+}
+
+function observedFinding(severity = "critical", cwe = "CWE-89") {
+  return {
+    schema: "kin.security.finding/v1",
+    finding_id: "b".repeat(64),
+    source: { engine: "kin-rule", kind: "deterministic", engine_version: "test" },
+    claim: { cwe, severity, name: "rule observation" },
+    evidence: { file: "rule.ts", line: 1, snippet_sha256: null },
+    confidence: "observed",
+  };
+}
+
+test("policy V1 rule: an advisory finding can NEVER block, even when a rule says block", () => {
+  const policy = loadPolicy(null); // critical -> block
+  const evaluation = evaluate(policy, [advisoryFinding("critical")]);
+  assert.strictEqual(evaluation.outcome, "pass", "an advisory finding alone must not block");
+  const decision = evaluation.decisions[0];
+  assert.strictEqual(decision.outcome, "warn", "the block is capped to warn");
+  assert.strictEqual(decision.advisory_block_capped, true, "the cap is recorded");
+  assert.match(decision.basis, /advisory cap/);
+});
+
+test("policy V1 rule: the same rule still blocks an OBSERVED critical (the cap is advisory-only)", () => {
+  const policy = loadPolicy(null);
+  const evaluation = evaluate(policy, [observedFinding("critical")]);
+  assert.strictEqual(evaluation.outcome, "block");
+  assert.strictEqual(evaluation.decisions[0].outcome, "block");
+  assert.strictEqual(evaluation.decisions[0].advisory_block_capped, undefined);
+});
+
+test("policy V1 rule: mixed findings — the block comes only from the observed finding", () => {
+  const policy = loadPolicy(null);
+  const evaluation = evaluate(policy, [advisoryFinding("critical"), observedFinding("critical")]);
+  assert.strictEqual(evaluation.outcome, "block", "the observed finding blocks");
+  const advisory = evaluation.decisions.find((d) => d.finding_id === "a".repeat(64));
+  const observed = evaluation.decisions.find((d) => d.finding_id === "b".repeat(64));
+  assert.strictEqual(advisory.outcome, "warn");
+  assert.strictEqual(advisory.advisory_block_capped, true);
+  assert.strictEqual(observed.outcome, "block");
+  assert.strictEqual(observed.advisory_block_capped, undefined);
+});
+
+test("policy V1 rule: advisory findings can warn or pass, and source.kind 'model' alone triggers the cap", () => {
+  const policy = loadPolicy(null);
+  // medium -> warn: the rule itself says warn, no cap needed
+  const warnDecision = evaluate(policy, [advisoryFinding("medium")]).decisions[0];
+  assert.strictEqual(warnDecision.outcome, "warn");
+  assert.strictEqual(warnDecision.advisory_block_capped, undefined);
+  // a strict file policy that blocks critical + an advisory finding: capped
+  const strictFile = writePolicy({ name: "strict", rules: [{ severity: ["critical"], outcome: "block" }] });
+  const strictPolicy = loadPolicy(strictFile);
+  const capped = evaluate(strictPolicy, [advisoryFinding("critical")]).decisions[0];
+  assert.strictEqual(capped.outcome, "warn");
+  assert.strictEqual(capped.advisory_block_capped, true);
+  // an active suppression still passes an advisory finding (pass < warn, no cap involved)
+  const suppressionPolicy = {
+    schema: "kin.security.policy/v1",
+    name: "advisory-sup",
+    rules: [{ severity: ["critical"], outcome: "block" }],
+    suppressions: [{ cwe: "CWE-89", reason: "triaged", expires: "2099-01-01T00:00:00.000Z" }],
+  };
+  const suppressed = evaluate(suppressionPolicy, [advisoryFinding("critical")]).decisions[0];
+  assert.strictEqual(suppressed.outcome, "pass");
+  assert.strictEqual(suppressed.basis, "suppression");
+  assert.strictEqual(suppressed.advisory_block_capped, undefined);
+  // the cap also fires on source.kind "model" even if confidence is mislabeled
+  const kindOnly = { ...advisoryFinding("critical"), confidence: "observed" };
+  const kindOnlyDecision = evaluate(loadPolicy(null), [kindOnly]).decisions[0];
+  assert.strictEqual(kindOnlyDecision.outcome, "warn", "source.kind 'model' alone must cap");
+  assert.strictEqual(kindOnlyDecision.advisory_block_capped, true);
 });
